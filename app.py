@@ -6,6 +6,7 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 import time
+from datetime import datetime as dt
 
 from helpers import *
 
@@ -35,7 +36,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///finance.db")
+#db = SQL("sqlite:///finance.db")
 
 # # Make sure API key is set
 # if not os.environ.get("API_KEY"):
@@ -54,7 +55,7 @@ def index():
     """Show portfolio of stocks"""
     
     #information of stocks owned
-    stocks = db.execute("SELECT * FROM portfolio WHERE user_id = ?", user_id) 
+    #stocks = #db.execute("SELECT * FROM portfolio WHERE user_id = ?", user_id) 
     query = "SELECT portfolio.id, portfolio.user_id, users.username, portfolio.stock_id, stocks.symbol, stocks.performance_id,stocks.name, portfolio.quantity FROM portfolio JOIN users ON portfolio.user_id = users.id JOIN stocks ON portfolio.stock_id = stocks.id WHERE users.id = ?"
     stocks = db2.execute(query, user_id)
     print(stocks)
@@ -106,7 +107,7 @@ def buy():
         else:
             # deductinh money from balance
             cash -= cost
-            db.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
+            ##db.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
             db2.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
 
             #checking if stock cache is present
@@ -118,7 +119,7 @@ def buy():
             s=s[0]
             print(s)
             # updating history
-            db.execute("INSERT INTO history (user_id,name, symbol, quantity, price) VALUES (?,?,?,?,?)", user_id, name, symbol, number, price)
+            #db.execute("INSERT INTO history (user_id,name, symbol, quantity, price) VALUES (?,?,?,?,?)", user_id, name, symbol, number, price)
             print("hererhere")
             db2.execute("INSERT INTO history (timestamp, user_id, stock_id, quantity, price) VALUES (?,?,?,?,?)",time.time(), user_id,s['id'], number, price)
           
@@ -129,11 +130,11 @@ def buy():
             # if user has purchased the stocks before, update the quantity otherwise create new entry
             if len(stocks) == 1:
                 amount = int(stocks[0]["quantity"]) + number
-                db.execute("UPDATE portfolio SET quantity = ? WHERE symbol = ? AND user_id = ?", amount, symbol, user_id)
+                #db.execute("UPDATE portfolio SET quantity = ? WHERE symbol = ? AND user_id = ?", amount, symbol, user_id)
                 db2.execute("UPDATE portfolio SET quantity = ? WHERE stock_id = ? AND user_id = ?", amount, s[id], user_id)
 
             else:
-                db.execute("INSERT INTO portfolio (user_id, username, stock_name, symbol, quantity) VALUES (?,?,?,?,?)", user_id, username, name, symbol, number)
+                #db.execute("INSERT INTO portfolio (user_id, username, stock_name, symbol, quantity) VALUES (?,?,?,?,?)", user_id, username, name, symbol, number)
                 db2.execute("INSERT INTO portfolio (user_id, stock_id, quantity) values (?, ?, ?) ", user_id, s['id'], number)
 
     #if requested by GET, render purchase form
@@ -149,8 +150,10 @@ def history():
     user_id = session["user_id"]
 
     #querying databse
-    stocks = db2.execute("SELECT history.id, history.user_id, users.username, history.stock_id, stocks.symbol, stocks.name, history.quantity, history.price, history.action FROM history JOIN users ON history.user_id = users.id JOIN stocks ON history.stock_id = stocks.id WHERE users.id = ?", user_id)
-    print(stocks)
+    stocks = db2.execute("SELECT history.timestamp, history.id, history.user_id, users.username, history.stock_id, stocks.symbol, stocks.name, history.quantity, history.price, history.action FROM history JOIN users ON history.user_id = users.id JOIN stocks ON history.stock_id = stocks.id WHERE users.id = ?", user_id)
+    for stock in stocks:
+        print(stock['timestamp'])
+        stock['time'] =  dt.fromtimestamp(stock['timestamp']) 
     return render_template("history.html", stocks=stocks)
 
 
@@ -273,12 +276,12 @@ def register():
         hash = generate_password_hash(password)
 
         #confirming unique username
-        stocks = db.execute("SELECT * from users where username = ?", username)
+        #stocks = #db.execute("SELECT * from users where username = ?", username)
         if len(stocks) > 0:
             return apology("Username Already Taken", 400)
 
         # adding user
-        db.execute("INSERT INTO users (username, hash) VALUES (?, ?)", username, hash)
+        #db.execute("INSERT INTO users (username, hash) VALUES (?, ?)", username, hash)
         db2.execute("INSERT INTO users (username, hash) VALUES (?, ?)", username, hash)
         #loggin in user automatically
         id = db2.execute("SELECT id FROM users WHERE hash = ?", hash)
@@ -337,9 +340,9 @@ def sell():
         # if successfully sold, then add money to balance
         if (stock_sold):
             # add entry in history
-           # db.execute("INSERT INTO history (user_id, stock_id, quantity, price, action) VALUES (?, ?, ?, ?, ?, ?)", user_id, info["name"], symbol, shares_to_sell, info["price"], "SOLD")
+           # #db.execute("INSERT INTO history (user_id, stock_id, quantity, price, action) VALUES (?, ?, ?, ?, ?, ?)", user_id, info["name"], symbol, shares_to_sell, info["price"], "SOLD")
             db2.execute("INSERT INTO history (timestamp, user_id, stock_id, quantity, price, action) VALUES (?,?,?,?,?, ?)",time.time(), user_id,s['id'], shares_to_sell, price, "SOLD")
-            user = db.execute("SELECT * FROM users WHERE id = ?", user_id)
+            user = db2.execute("SELECT * FROM users WHERE id = ?", user_id)
             cash = float(user[0]["cash"])
             cash += (int(shares_to_sell) * price)
             db2.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
@@ -372,7 +375,7 @@ def recharge():
 
         #updating database
         db2.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
-        db2.execute("INSERT INTO history (user_id, stock_id, price, quantity, action) VALUES (?, ?, ?, ?, ?)", user_id,3, amount, quantity, "Recharge")
+        db2.execute("INSERT INTO history (timestamp, user_id, stock_id, price, quantity, action) VALUES (?, ?, ?, ?, ?, ?)", time.time(), user_id,3, amount, quantity, "Recharge")
 
     else:
         return render_template("recharge.html", cash=cash)
