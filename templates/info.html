@@ -13,8 +13,11 @@
         <button type="submit">Buy</button>
     </form>
 
-    <form action="/sell" method="post">
+    <form action="/sell" method="get">
         <input type="hidden" name="stock_price" value="{{info['lastClose']}} ">
+        <input type="hidden" name="stock_name" value="{{name}} ">
+        <input type="hidden" name="stock_id" value="{{id}} ">
+        <input type="hidden" name="symbol" value="{{symbol}}">
         <button type="submit">Sell</button>
     </form>
 

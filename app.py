@@ -81,7 +81,7 @@ def index():
 @login_required
 def buy():
     user_id = session["user_id"]
-    user = db.execute("SELECT username from users where id = ?", user_id)
+    user = db2.execute("SELECT username from users where id = ?", user_id)
     username = user[0]["username"]
     """Buy shares of stocks"""
     if request.method == "POST":
@@ -294,7 +294,7 @@ def register():
 def sell():
     user_id = session["user_id"]
     # querying portfolio
-    stocks = db.execute("SELECT * FROM portfolio WHERE user_id = ?", user_id)
+    stocks = db2.execute("SELECT portfolio.id, portfolio.user_id, users.username, portfolio.stock_id, stocks.symbol, stocks.name, portfolio.quantity FROM portfolio JOIN users ON portfolio.user_id = users.id JOIN stocks ON portfolio.stock_id = stocks.id WHERE users.id = ?", user_id)
   
     """Sell shares of stocks"""
     # keeps rack of sold status
@@ -307,13 +307,13 @@ def sell():
 
         # variables
         symbol = request.form.get("symbol")
-        info = lookup(symbol)  # fetches data through API
+        s = db2.execute("select * from stocks where symbol=?", symbol)[0]
+        price = stockPrice(s['performance_id'])  # fetches data through API
         symbol=symbol.upper()
         
         # shares owned
-        stocks = db.execute("SELECT * FROM portfolio WHERE user_id = ? and symbol = ?", user_id, symbol)
+        stocks = db2.execute("SELECT portfolio.id, portfolio.user_id, users.username, portfolio.stock_id, stocks.symbol, stocks.name, portfolio.quantity FROM portfolio JOIN users ON portfolio.user_id = users.id JOIN stocks ON portfolio.stock_id = stocks.id WHERE users.id = ? and stocks.symbol=?", user_id, symbol)
         shares = int(stocks[0]["quantity"])
-
         shares_to_sell = int(request.form.get("shares"))
    
         if shares == 0:
@@ -324,26 +324,37 @@ def sell():
         
         # removes the entry of share from portfolio if no shares are left after selling
         elif shares == shares_to_sell:
-            db.execute("DELETE FROM portfolio WHERE user_id = ? AND symbol = ?", user_id, symbol)
+            
+            db2.execute("DELETE FROM portfolio WHERE user_id = ? AND stock_id = ?", user_id, s['id'])
             stock_sold = True
         
         # decreases the number of shares owned
         elif shares > shares_to_sell:
             shares_left = shares - shares_to_sell
-            db.execute("UPDATE portfolio SET quantity = ? WHERE symbol = ? AND user_id = ?", shares_left, symbol, user_id)
+            db2.execute("UPDATE portfolio SET quantity = ? WHERE stock_id = ? AND user_id = ?", shares_left, s['id'], user_id)
             stock_sold = True
 
         # if successfully sold, then add money to balance
         if (stock_sold):
             # add entry in history
-            db.execute("INSERT INTO history (user_id, name, symbol, quantity, price, action) VALUES (?, ?, ?, ?, ?, ?)", user_id, info["name"], symbol, shares_to_sell, info["price"], "SOLD")
+           # db.execute("INSERT INTO history (user_id, stock_id, quantity, price, action) VALUES (?, ?, ?, ?, ?, ?)", user_id, info["name"], symbol, shares_to_sell, info["price"], "SOLD")
+            db2.execute("INSERT INTO history (timestamp, user_id, stock_id, quantity, price, action) VALUES (?,?,?,?,?, ?)",time.time(), user_id,s['id'], shares_to_sell, price, "SOLD")
             user = db.execute("SELECT * FROM users WHERE id = ?", user_id)
             cash = float(user[0]["cash"])
-            cash += (int(shares_to_sell) * info["price"])
-            db.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
+            cash += (int(shares_to_sell) * price)
+            db2.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
         
     else:
-        return render_template("sell.html", stocks=stocks)
+
+        if(request.args.get("stock_id") is None):
+            return render_template("sell.html", stocks=stocks)
+        
+        else:
+            symbol = request.args.get("symbol")
+            name = request.args.get("stock_name")
+
+            price=request.args.get("stock_price")
+            return render_template("sell_stock.html", symbol=symbol, name=name, price=price)
     return redirect("/")
 
 
