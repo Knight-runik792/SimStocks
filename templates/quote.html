@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block style %}
+<link href="static/login.css" rel="stylesheet"> </link>
+{% endblock %}
+
+{% block title %}
+    Quote
+{% endblock %}
+
+{% block main %}
+    <form action="/quote" method="post">
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="symbol" placeholder="Stock Symbol" type="text">
+        </div>
+        <button class="btn btn-primary" type="submit">Get Quote</button>
+        {% block quote %}
+        {% endblock %}
+    </form>
+
+{% endblock %}

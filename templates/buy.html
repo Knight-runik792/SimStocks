@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block style %}
+<link href="static/login.css" rel="stylesheet">  
+{% endblock %}
+
+{% block title %}
+    Buy Stocks
+{% endblock %}
+
+{% block main %}
+    <form action="/buy" method="post">
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="symbol" placeholder="Symbol" type="text">
+        </div><br>
+        <div class="form-group">
+            <input autocomplete="off" class="form-control" name="number" placeholder="Number of Stocks" type="number">
+        </div>
+        <button class="btn btn-primary" type="submit">Buy Stock</button>
+    </form>
+{% endblock %}

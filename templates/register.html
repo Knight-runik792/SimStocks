@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block style %}
+<link href="static/login.css" rel="stylesheet"> </link>
+{% endblock %}
+
+{% block title %}
+    Register
+{% endblock %}
+
+{% block main %}
+    <form action="/register" method="post">
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text" required><br/>
+        </div>
+        <div class="form-group">
+            <input autocomplete="off" class="form-control" name="password" placeholder="Password" type="password" required><br/>
+        </div>
+        <div class="form-group"><input autocomplete="off" class="form-control" name="confirmation" placeholder="Password" type="password" required><br/>
+        </div>
+        <div class="form-group">  <button class="btn btn-primary" type="submit">Register</button>
+</div>
+{% endblock %}
+
+
+    </form>

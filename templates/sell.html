@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block style %}
+<link href="static/login.css" rel="stylesheet"> </link>
+{% endblock %}
+
+{% block title %}
+    Sell Stocks
+{% endblock %}
+
+{% block main %}
+    <form action="/sell" method="post">
+        <select name="symbol" class="form-select" aria-label="Default select example">
+            <option selected disabled>Select Stock
+            </option>
+            {% for stock in stocks %}
+            <option value="{{stock['symbol']}}">{{ stock["symbol"] }}</option>
+            {% endfor %}
+          </select>
+          <br>
+          <br>
+          <input type="text" name="shares" placeholder="Shares" autocomplete="off" autofocus>
+          <br>
+        <button class="btn btn-primary" type="submit">Sell Stock</button>
+    </form>
+{% endblock %}

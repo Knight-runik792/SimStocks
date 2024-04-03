@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block style %}
+<link href="static/login.css" rel="stylesheet">
+{% endblock %}
+
+{% block title %}
+    History
+{% endblock %}
+
+{% block main %}
+<table class = "table blur">
+<thead class="thead-dark">
+    <tr>
+        <th scope="col"> NAME</th> 
+        <th scope="col"> SYMBOL</td>
+        <th scope="col"> Quantity</th>
+        <th scope="col"> Price</th>
+        <th scope="col"> Cost</th>
+        <th scope="col"> Action</th>
+    </tr>
+</thead>
+
+<tbody>
+    {% for stock in stocks %}
+
+    <tr style="color: white;" > 
+        <td> {{ stock.name }}</td>
+        <td> {{ stock.symbol }}</td>
+        <td> {{ stock.quantity }}</td>
+        <td> {{ stock.price | usd}}</td>
+        <td> {{ (stock.price * stock.quantity) | usd}}</td>
+        <td> {{ stock.action }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endblock %}
+

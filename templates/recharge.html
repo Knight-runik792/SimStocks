@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block style %}
+<link href="static/login.css" rel="stylesheet"> </link>
+{% endblock %}
+
+{% block title %}
+    Recharge
+{% endblock %}
+
+{% block main %}
+    <form action="/recharge" method="post">
+        <p> Current Amount : {{cash | usd }}</p>
+        <div class="form-group">
+            <input value = "10000" autocomplete="off" autofocus class="form-control" name="amount" placeholder="Amount" type="number">
+        </div><br>
+        
+        <button class="btn btn-primary" type="BUY">Recharge</button>
+    </form>
+{% endblock %}

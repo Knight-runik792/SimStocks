@@ -1,0 +1,32 @@
+{% extends "quote.html" %}
+
+
+
+{% block quote %}
+<table class = "table blur">
+    <thead>
+        <tr>
+            <th scope="col"> Symbol</th> 
+            <th scope="col"> Name</th> 
+            <!-- <th scope="col"> Shares</td>
+            <th scope="col"> Price</th>
+            <th scope="col"> TOTAL</th> -->
+          
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for stock in stocks %}
+        <tr style="color: white;"> 
+          <td> <a href="{{ url_for('stock_details', stock_id=stock['id']) }}"  >  {{ stock["ticker"] }}</a> </td>
+            <td> {{ stock["name"] }}</td>
+            <td> {{ stock["id"]   }}</td>
+          
+           
+        </tr>
+        {% endfor %}
+
+    </tbody>
+   
+{% endblock %}
