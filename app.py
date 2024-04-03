@@ -57,18 +57,19 @@ def index():
     # querying cash remainig
     user = db.execute("SELECT cash FROM users WHERE id = ?", user_id)
 
-    for stock in stocks:
+    # for stock in stocks:
         # stroring price of each stock price
-        info = lookup(stock["symbol"])
-        total += (info["price"] * int(stock["quantity"]))
-        # stroring prices in a dictionary
-        prices[info["symbol"]] = info["price"]
+
+        # # info = lookup(stock["symbol"])
+        # total += (info["price"] * int(stock["quantity"]))
+        # # stroring prices in a dictionary
+        # prices[info["symbol"]] = info["price"]
 
     return render_template("index.html", user=user, stocks=stocks, prices=prices, total=total)
 
 
 
-@app.route("/buy", methods=["GET", "POST"])
+@app.route("/buy", methods=[ "POST"])
 @login_required
 def buy():
     user_id = session["user_id"]
@@ -76,18 +77,18 @@ def buy():
     username = user[0]["username"]
     """Buy shares of stocks"""
     if request.method == "POST":
-        stocks = lookup(request.form.get("symbol"))
-        if not request.form.get("symbol") or stocks["symbol"] == "Invalid":
-            return apology("Enter a valid Stock Symbol", 400)
+        name=request.form.get("name")
+        id = request.form.get("id")
+        price = float(request.form.get("price"))
+        symbol = request.form.get("symbol")
         
-        elif not request.form.get("number"):
+        if not request.form.get("number"):
             return apology("Please provide number of stocks to buy", 400)
 
         number = int(request.form.get("number"))
-        price = stocks["price"]
+
         cost = price * number
-        symbol = stocks["symbol"]
-        name = stocks["name"]
+        
         # querying data for cash
         user= db.execute("SELECT cash FROM users WHERE id = ?", user_id)
     
@@ -106,15 +107,14 @@ def buy():
             stocks = db.execute("SELECT quantity from portfolio where user_id = ? and  symbol = ?", user_id, symbol)
   
             # if user has purchased the stocks before, update the quantity otherwise create new entry
-            if len(stocks) is 1:
+            if len(stocks) == 1:
                 amount = int(stocks[0]["quantity"]) + number
                 db.execute("UPDATE portfolio SET quantity = ? WHERE symbol = ? AND user_id = ?", amount, symbol, user_id)
 
             else:
                 db.execute("INSERT INTO portfolio (user_id, username, stock_name, symbol, quantity) VALUES (?,?,?,?,?)", user_id, username, name, symbol, number)
     #if requested by GET, render purchase form
-    else:
-        return render_template("buy.html")
+   
 
     return redirect("/")
     
@@ -201,6 +201,8 @@ def quote():
 @app.route('/stock_details/<stock_id>')
 def stock_details(stock_id):
     url = "https://ms-finance.p.rapidapi.com/stock/v2/get-realtime-data"
+    name = request.args.get("name")
+    
 
     querystring = {"performanceId":stock_id}
     
@@ -212,7 +214,16 @@ def stock_details(stock_id):
     response = requests.get(url, headers=headers, params=querystring)
     info = response.json()
     print(info)
-    return render_template("info.html", info=info)
+    return render_template("info.html", info=info, name=name, id=stock_id)
+
+@app.route('/buy_stocks', methods=["POST"])
+def buy_stocks():
+    name = request.form.get("stock_name")
+    id=request.form.get("stock_id")
+    price=request.form.get("stock_price")
+    print(name, id, price)
+    return render_template("buy.html", name=name, id=id, price=price)
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():

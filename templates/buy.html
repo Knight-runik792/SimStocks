@@ -11,10 +11,18 @@
 {% block main %}
     <form action="/buy" method="post">
         <div class="form-group">
-            <input autocomplete="off" autofocus class="form-control" name="symbol" placeholder="Symbol" type="text">
+            <h2> {{name}}</h2>
+            <h2> {{Symbol}}</h2>
+            <h2> {{price}} </h2>
+        
+
         </div><br>
+        <input type="hidden" value="{{name}}" name="name">
+        <input type="hidden" value="{{price}}" name="price">
+        <input type="hidden" value="{{id}}" name="id">
+        <input type="hidden" value = "{{symbol}}" name="symbol">
         <div class="form-group">
-            <input autocomplete="off" class="form-control" name="number" placeholder="Number of Stocks" type="number">
+            <input autocomplete="off" autofocus class="form-control" name="number" placeholder="Number of Stocks" type="number">
         </div>
         <button class="btn btn-primary" type="submit">Buy Stock</button>
     </form>

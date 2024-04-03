@@ -1,5 +1,22 @@
 {% extends "layout.html" %}
 {% block main %}
-    <h1> {{info}} </h1>
-   
+    <h1>     {{info['lastClose']}} </h1>
+    <h1> {{name}}</h1>
+    <h1> {{id}}</h1>
+
+    
+    <form action="/buy_stocks" method="post">
+        <input type="hidden" name="stock_price" value="{{info['lastClose']}} ">
+        <input type="hidden" name="stock_name" value="{{name}} ">
+        <input type="hidden" name="stock_id" value="{{id}} ">
+        <button type="submit">Buy</button>
+    </form>
+
+    <form action="/sell" method="post">
+        <input type="hidden" name="stock_price" value="{{info['lastClose']}} ">
+        <button type="submit">Sell</button>
+    </form>
+
+    
+
 {% endblock %}
