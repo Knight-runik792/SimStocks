@@ -26,10 +26,10 @@
         {% for stock in stocks %}
         <tr style="color: white;"> 
             <td> {{ stock["symbol"] }}</td>
-            <td> {{ stock["stock_name"] }}</td>
+            <td> {{ stock["name"] }}</td>
             <td> {{ stock["quantity"] }}</td>
-            <td></td>
-            <td>  </td>            
+            <td> {{ prices[stock["symbol"]]  }} </td>
+            <td> {{prices[stock["symbol"]] * stock["quantity"] }} </td>            
         </tr>
         {% endfor %}
     <tr class="font-weight-bold">

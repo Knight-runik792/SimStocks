@@ -1,11 +1,11 @@
-import os
-
 from cs50 import SQL
+import sqlite3
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
+import time
 
 from helpers import *
 
@@ -41,6 +41,8 @@ db = SQL("sqlite:///finance.db")
 # if not os.environ.get("API_KEY"):
 #     raise RuntimeError("API_KEY not set")
 
+#SQLDB
+db2 = SQL("sqlite:///fin2.db")
 
 @app.route("/")
 @login_required
@@ -53,18 +55,24 @@ def index():
     
     #information of stocks owned
     stocks = db.execute("SELECT * FROM portfolio WHERE user_id = ?", user_id) 
+    query = "SELECT portfolio.id, portfolio.user_id, users.username, portfolio.stock_id, stocks.symbol, stocks.performance_id,stocks.name, portfolio.quantity FROM portfolio JOIN users ON portfolio.user_id = users.id JOIN stocks ON portfolio.stock_id = stocks.id WHERE users.id = ?"
+    stocks = db2.execute(query, user_id)
+    print(stocks)
+
 
     # querying cash remainig
-    user = db.execute("SELECT cash FROM users WHERE id = ?", user_id)
+    user = db2.execute("SELECT cash FROM users WHERE id = ?", user_id)
 
-    # for stock in stocks:
-        # stroring price of each stock price
-
-        # # info = lookup(stock["symbol"])
-        # total += (info["price"] * int(stock["quantity"]))
-        # # stroring prices in a dictionary
-        # prices[info["symbol"]] = info["price"]
-
+    for stock in stocks:
+        # storing price of each stock price
+        price = stockPrice(stock["performance_id"])
+        symbol = stock["symbol"]
+       
+        total += (price * int(stock["quantity"]))
+        # stroring prices in a dictionary
+        prices[symbol] = price
+    print(prices)
+    print(stocks)
     return render_template("index.html", user=user, stocks=stocks, prices=prices, total=total)
 
 
@@ -90,7 +98,7 @@ def buy():
         cost = price * number
         
         # querying data for cash
-        user= db.execute("SELECT cash FROM users WHERE id = ?", user_id)
+        user= db2.execute("SELECT cash FROM users WHERE id = ?", user_id)
     
         cash = float(user[0]["cash"])
         if cash < cost:
@@ -99,20 +107,35 @@ def buy():
             # deductinh money from balance
             cash -= cost
             db.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
+            db2.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
 
+            #checking if stock cache is present
+            s = db2.execute("SELECT * FROM stocks where symbol = ?", symbol)
+            print("before, ", symbol)
+            if s == []:
+                db2.execute("INSERT INTO stocks (symbol, performance_id, name, info) values (?, ?, ?, ?)", symbol,id, name, "TO BE ADDED")
+            s = db2.execute("SELECT * FROM stocks where symbol = ?", symbol)
+            s=s[0]
+            print(s)
             # updating history
             db.execute("INSERT INTO history (user_id,name, symbol, quantity, price) VALUES (?,?,?,?,?)", user_id, name, symbol, number, price)
-            
+            print("hererhere")
+            db2.execute("INSERT INTO history (timestamp, user_id, stock_id, quantity, price) VALUES (?,?,?,?,?)",time.time(), user_id,s['id'], number, price)
+          
+          
             # updating personal portfolio
-            stocks = db.execute("SELECT quantity from portfolio where user_id = ? and  symbol = ?", user_id, symbol)
+            stocks = db2.execute("SELECT quantity from portfolio where user_id = ? and  stock_id = ?", user_id, s['id'])
   
             # if user has purchased the stocks before, update the quantity otherwise create new entry
             if len(stocks) == 1:
                 amount = int(stocks[0]["quantity"]) + number
                 db.execute("UPDATE portfolio SET quantity = ? WHERE symbol = ? AND user_id = ?", amount, symbol, user_id)
+                db2.execute("UPDATE portfolio SET quantity = ? WHERE stock_id = ? AND user_id = ?", amount, s[id], user_id)
 
             else:
                 db.execute("INSERT INTO portfolio (user_id, username, stock_name, symbol, quantity) VALUES (?,?,?,?,?)", user_id, username, name, symbol, number)
+                db2.execute("INSERT INTO portfolio (user_id, stock_id, quantity) values (?, ?, ?) ", user_id, s['id'], number)
+
     #if requested by GET, render purchase form
    
 
@@ -126,7 +149,7 @@ def history():
     user_id = session["user_id"]
 
     #querying databse
-    stocks = db.execute("SELECT * FROM history WHERE user_id = ?", user_id)
+    stocks = db2.execute("SELECT history.id, history.user_id, users.username, history.stock_id, stocks.symbol, stocks.name, history.quantity, history.price, history.action FROM history JOIN users ON history.user_id = users.id JOIN stocks ON history.stock_id = stocks.id WHERE users.id = ?", user_id)
     print(stocks)
     return render_template("history.html", stocks=stocks)
 
@@ -150,7 +173,7 @@ def login():
             return apology("must provide password", 403)
 
         # Query database for username
-        stocks = db.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
+        stocks = db2.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
 
         # Ensure username exists and password is correct
         if len(stocks) != 1 or not check_password_hash(stocks[0]["hash"], request.form.get("password")):
@@ -202,6 +225,7 @@ def quote():
 def stock_details(stock_id):
     url = "https://ms-finance.p.rapidapi.com/stock/v2/get-realtime-data"
     name = request.args.get("name")
+    symbol=request.args.get("symbol")
     
 
     querystring = {"performanceId":stock_id}
@@ -214,15 +238,16 @@ def stock_details(stock_id):
     response = requests.get(url, headers=headers, params=querystring)
     info = response.json()
     print(info)
-    return render_template("info.html", info=info, name=name, id=stock_id)
+    return render_template("info.html", info=info, symbol=symbol, name=name, id=stock_id)
 
 @app.route('/buy_stocks', methods=["POST"])
 def buy_stocks():
     name = request.form.get("stock_name")
+    symbol = request.form.get("symbol")
     id=request.form.get("stock_id")
     price=request.form.get("stock_price")
     print(name, id, price)
-    return render_template("buy.html", name=name, id=id, price=price)
+    return render_template("buy.html", name=name, id=id, price=price, symbol=symbol)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -254,9 +279,9 @@ def register():
 
         # adding user
         db.execute("INSERT INTO users (username, hash) VALUES (?, ?)", username, hash)
-
+        db2.execute("INSERT INTO users (username, hash) VALUES (?, ?)", username, hash)
         #loggin in user automatically
-        id = db.execute("SELECT id FROM users WHERE hash = ?", hash)
+        id = db2.execute("SELECT id FROM users WHERE hash = ?", hash)
         session["user_id"] = id[0]["id"]
         return redirect("/") 
 
@@ -326,7 +351,7 @@ def sell():
 @login_required
 def recharge():
     user_id = session["user_id"]
-    user = db.execute("SELECT * FROM users WHERE id = ?", user_id)
+    user = db2.execute("SELECT * FROM users WHERE id = ?", user_id)
     cash = float(user[0]["cash"])
     if request.method == "POST":
         amount = int(request.form.get("amount"))
@@ -335,8 +360,8 @@ def recharge():
         dash = "-"
 
         #updating database
-        db.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
-        db.execute("INSERT INTO history (user_id, name, symbol, price, quantity, action) VALUES (?, ?, ?, ?, ?, ?)", user_id,dash, dash, amount, quantity, "Recharge")
+        db2.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
+        db2.execute("INSERT INTO history (user_id, stock_id, price, quantity, action) VALUES (?, ?, ?, ?, ?)", user_id,3, amount, quantity, "Recharge")
 
     else:
         return render_template("recharge.html", cash=cash)

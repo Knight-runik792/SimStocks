@@ -60,20 +60,22 @@ def lookup(query):
     
     return stocks
   
-# def stockQuote(id):
+def stockPrice(perf_id):
   
-#     url = "https://ms-finance.p.rapidapi.com/stock/v2/get-realtime-data"
+    url = "https://ms-finance.p.rapidapi.com/stock/v2/get-realtime-data"
 
-#     querystring = {"performanceId":id}
+    querystring = {"performanceId":perf_id}
 
-#     headers = {
-#         "X-RapidAPI-Key": "f9eb8cf462mshda5338b49a7e35dp1cdfa9jsn7bca178e06c6",
-#         "X-RapidAPI-Host": "ms-finance.p.rapidapi.com"
-#     }
+    headers = {
+        "X-RapidAPI-Key": "f9eb8cf462mshda5338b49a7e35dp1cdfa9jsn7bca178e06c6",
+        "X-RapidAPI-Host": "ms-finance.p.rapidapi.com"
+    }
 
-#     response = requests.get(url, headers=headers, params=querystring)
+    response = requests.get(url, headers=headers, params=querystring)
 
-#     return(response.json())
+    price = response.json()["lastPrice"]
+
+    return price
 
 """
 YAHOO finance
