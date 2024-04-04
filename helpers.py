@@ -48,7 +48,7 @@ def lookup(query):
     querystring = {"q": query}
 
     headers = {
-        "X-RapidAPI-Key": "f9eb8cf462mshda5338b49a7e35dp1cdfa9jsn7bca178e06c6",
+        "X-RapidAPI-Key": "9bd629774amshb655f0d1815c873p14e319jsne5adc0d52fd9",
         "X-RapidAPI-Host": "ms-finance.p.rapidapi.com"
     }
 
@@ -71,7 +71,7 @@ def stockPrice(perf_id):
     querystring = {"performanceId": perf_id}
 
     headers = {
-        "X-RapidAPI-Key": "f9eb8cf462mshda5338b49a7e35dp1cdfa9jsn7bca178e06c6",
+        "X-RapidAPI-Key": "9bd629774amshb655f0d1815c873p14e319jsne5adc0d52fd9",
         "X-RapidAPI-Host": "ms-finance.p.rapidapi.com"
     }
 
@@ -294,3 +294,34 @@ def generateReturnsPlot(perf_id):
     plotly_returns= fig.to_html()
 
     return plotly_returns
+
+
+def getArticlesList(stock_id):
+    url = "https://ms-finance.p.rapidapi.com/articles/list"
+
+    querystring = {"performanceId":stock_id}
+
+    headers = {
+        "X-RapidAPI-Key": "9bd629774amshb655f0d1815c873p14e319jsne5adc0d52fd9",
+        "X-RapidAPI-Host": "ms-finance.p.rapidapi.com"
+    }
+
+    response = requests.get(url, headers=headers, params=querystring)
+
+    return(response.json())
+
+def getArticle(article_id):
+
+
+    url = "https://ms-finance.p.rapidapi.com/articles/get-details"
+
+    querystring = {"id":article_id}
+
+    headers = {
+        "X-RapidAPI-Key": "9bd629774amshb655f0d1815c873p14e319jsne5adc0d52fd9",
+        "X-RapidAPI-Host": "ms-finance.p.rapidapi.com"
+    }
+
+    response = requests.get(url, headers=headers, params=querystring)
+
+    return (response.json())

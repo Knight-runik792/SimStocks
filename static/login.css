@@ -6,10 +6,8 @@
   box-sizing: border-box;
 }
 body {
-  /* background: url(https://source.unsplash.com/1920x2400?hdr,stocks,finance);  */
-  background: url("/static/bg.png");
-  background-size: cover;
-  background-repeat: no-repeat;
+  background: #ccc;
+
   
 }
 form {

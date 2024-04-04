@@ -239,7 +239,7 @@ def stock_details(stock_id):
     querystring = {"performanceId":stock_id}
     
     headers = {
-        "X-RapidAPI-Key": "f9eb8cf462mshda5338b49a7e35dp1cdfa9jsn7bca178e06c6",
+        "X-RapidAPI-Key": "9bd629774amshb655f0d1815c873p14e319jsne5adc0d52fd9",
         "X-RapidAPI-Host": "ms-finance.p.rapidapi.com"
     }
 
@@ -274,7 +274,10 @@ def stock_details(stock_id):
 
     plotly_returns_chart=generateReturnsPlot(stock_id)
 
-    return render_template("info.html", info=info, symbol=symbol, name=name, id=stock_id, owned=quantity, amount=current_portfolio, plotly_candlestick_html=plotly_candlestick_html,plot1=plot1,plot2=plot2,plot3=plot3,plot4=plot4, plotly_returns_chart=plotly_returns_chart)
+    articles = getArticlesList(stock_id)
+    
+
+    return render_template("info.html", articles=articles, info=info, symbol=symbol, name=name, id=stock_id, owned=quantity, amount=current_portfolio, plotly_candlestick_html=plotly_candlestick_html,plot1=plot1,plot2=plot2,plot3=plot3,plot4=plot4, plotly_returns_chart=plotly_returns_chart)
 
 
 
@@ -391,10 +394,10 @@ def sell():
         else:
             symbol = request.args.get("symbol")
             name = request.args.get("stock_name")
-
+            owned = request.args.get("owned")
             price=request.args.get("stock_price")
             
-            return render_template("sell_stock.html", symbol=symbol, name=name, price=price)
+            return render_template("sell_stock.html",owned=owned, symbol=symbol, name=name, price=price)
     return redirect("/")
 
 
@@ -419,6 +422,24 @@ def recharge():
 
     return redirect("/recharge")
 
+
+@app.route("/article_details/<article_id>")
+def article_details(article_id):
+    content = getArticle(article_id)
+    
+    title = content['title']
+    # Extract main text content
+    main_text = ""
+    for paragraph in content["body"]:
+        if paragraph["type"] == "p":
+            for content_obj in paragraph["contentObject"]:
+                if content_obj["type"] == "text":
+                    main_text += content_obj["content"] + " "
+            main_text += "\n"
+
+    
+
+    return render_template("article.html", title=title,content=main_text)
 
 def errorhandler(e):
     """Handle error"""

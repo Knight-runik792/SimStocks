@@ -1,44 +1,20 @@
-<!-- {% extends "layout.html" %} -->
+{% extends "layout.html" %}
+{% block title%}
+{{symbol}}
+{%endblock%}
+
+
+{% block style %}
+<link rel="stylesheet" href="infostyles.css">
+
+{% endblock %}
+
+
 {% block main %}
-<!-- <h1>     {{info['lastClose']}} </h1>
-    <h1> {{name}}</h1>
-    <h1> {{id}}</h1> -->
 
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Information</title>
-    <link rel="stylesheet" href="infostyles.css">
-    <!-- Bootstrap CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Include necessary JavaScript libraries here -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-
-
-
-</head>
-
-<body>
-
-
-    <div class="navbar navbar-dark bg-dark">
-        <span class="navbar-brand mb-0 h1">SimStock</span>
-        <div>
-            <a href="#" class="text-white mr-3">Quote</a>
-            <a href="#" class="text-white mr-3">Sell</a>
-            <a href="#" class="text-white mr-3">Portfolio</a>
-            <a href="#" class="text-white">History</a>
-        </div>
-    </div>
     <div class="container">
-        <div class="particles">
-            <!-- Generate particles dynamically with JavaScript -->
-        </div>
-        <!-- Stock Information Card -->
+        <div class="particles"></div>
+
 
         <div class="card mb-4">
             <div class="card-body">
@@ -50,23 +26,24 @@
                 <p class="card-text"><strong>Change: </strong> ${{ info.dayChange | float |
                     round(2) }}
                     ({{ info.dayChangePer | float | round(2) }}%)</p>
-
-                <p class="card-text"><strong>Market Cap:</strong> ${{info['marketCap']}}</p>
-                <p class="card-text"><strong>Volume:</strong> {{info['volume']}} shares</p>
-                <p class="card-text"><strong>Avg Volume:</strong> {{info['avgVolume']}} shares</p>
-                <p class="card-text"><strong>Daily high: </strong>${{info['dayRangeHigh']}} </p>
-                <p class="card-text"><strong>Daily low: </strong> ${{info['dayRangeLow']}}</p>
-                <p class="card-text"><strong>52-week high: </strong>${{info['yearRangeHigh']}} </p>
-                <p class="card-text"><strong>52-week low: </strong> ${{info['yearRangeLow']}}</p>
-                <p class="card-text"><strong>Current Quantity Owned:</strong>{{owned}} shares</p>
-                <p class="card-text"><strong>Your Portfolio: </strong>${{amount}}</p>
-                <div class="row justify-content-center">
-                    <div class="col-md-auto">
-                        <form action="/buy_stocks" method="post">
-                            <input type="hidden" name="stock_price" value="{{info['lastClose']}}">
+                    
+                    <p class="card-text"><strong>Market Cap:</strong> ${{info['marketCap']}}</p>
+                    <p class="card-text"><strong>Volume:</strong> {{info['volume']}} shares</p>
+                    <p class="card-text"><strong>Avg Volume:</strong> {{info['avgVolume']}} shares</p>
+                    <p class="card-text"><strong>Daily high: </strong>${{info['dayRangeHigh']}} </p>
+                    <p class="card-text"><strong>Daily low: </strong> ${{info['dayRangeLow']}}</p>
+                    <p class="card-text"><strong>52-week high: </strong>${{info['yearRangeHigh']}} </p>
+                    <p class="card-text"><strong>52-week low: </strong> ${{info['yearRangeLow']}}</p>
+                    <p class="card-text"><strong>Current Quantity Owned:</strong>{{owned}} shares</p>
+                    <p class="card-text"><strong>Your Portfolio: </strong>${{amount}}</p>
+                    <div class="row justify-content-center">
+                        <div class="col-md-auto">
+                            <form action="/buy_stocks" method="post">
+                                <input type="hidden" name="stock_price" value="{{info['lastClose']}}">
                             <input type="hidden" name="stock_name" value="{{name}}">
                             <input type="hidden" name="stock_id" value="{{id}}">
                             <input type="hidden" name="symbol" value="{{symbol}}">
+
                             <button type="submit" class="btn btn-success">Buy</button>
                         </form>
                     </div>
@@ -76,6 +53,7 @@
                             <input type="hidden" name="stock_name" value="{{name}}">
                             <input type="hidden" name="stock_id" value="{{id}}">
                             <input type="hidden" name="symbol" value="{{symbol}}">
+                            <input type="hidden" name="owned" value="{{owned}}">
                             <button type="submit" class="btn btn-danger">Sell</button>
                         </form>
                     </div>
@@ -83,7 +61,7 @@
             </div>
         </div>
     </div>
-
+    
     <!-- Chart Card 1 -->
     <div class="row">
         <div class="col">
@@ -95,20 +73,20 @@
             </div>
         </div>
     </div>
-
+    
     <!-- Chart Card 2 -->
     <div class="row">
         <div class="col">
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Stock Price Over Time</h5>
-                    <div class="graph-container" id="chart-container-2">{{plotly_history_chart | safe}}</div>
+                    <div class="graph-container" id="chart-container-2">  {{plot1 | safe}}</div>
                     <div>
                         <form>
                             <select id="time_period_dropdown">
-                                <option value="3_months">3 Months</option>
-                                <option value="1_year">1 Year</option>
-                                <option value="5_years">5 Years</option>
+                                <option value="3m">3 Months</option>
+                                <option value="1y">1 Year</option>
+                                <option value="5y">5 Years</option>
                                 <option value="max">Maximum</option>
                             </select>
                             <button type="button" onclick="updateChart()">Show</button>
@@ -118,35 +96,7 @@
             </div>
         </div>
     </div>
-    <script>
-        function updateChart() {
-            var time_period = document.getElementById('time_period_dropdown').value;
-            var plotly_plot_html;
-            console.log(time_period);
-
-            // Determine which plot HTML content to use based on the selected time period
-            switch (time_period) {
-                case '3_months':
-                    plotly_plot_html = "plot1";
-                    break;
-                case '1_year':
-                    plotly_plot_html = "plot2";
-                    break;
-                case '5_years':
-                    plotly_plot_html = "plot3";
-                    break;
-                case 'max':
-                    plotly_plot_html = "plot4";
-                    break;
-                default:
-                    plotly_plot_html="plot1"
-                    return;
-            }
-
-            // Update the chart container with the selected plot HTML content
-            document.getElementById('chart-container-2').innerHTML ="{{ plotly_plot_html | safe}}";
-        }
-    </script>
+    
     <!-- Chart Card 3 -->
     <div class="row">
         <div class="col">
@@ -165,77 +115,31 @@
                 <div class="card-body">
                     <h5 class="card-title">Latest News</h5>
                     <!-- Add news content here -->
-                    <p class="card-text">News 1</p>
-                    <p class="card-text">News 2</p>
-                    <p class="card-text">News 3</p>
+                    {% for article in articles %}
+                    <a href = "{{ url_for('article_details', article_id=article['Id']) }}"><p class="card-text"> {{article['Title']}} </p></a>
+                    {%endfor%}
                 </div>
             </div>
         </div>
     </div>
-    </div>
-    </div>
-    </div>
+</div>
+</div>
+</div>
 
-    <!-- Bootstrap JS and custom script
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-            function showChart(chartId) {
-                // Remove any existing chart
-                var chartContainer = document.getElementById('chart-container');
-                chartContainer.innerHTML = '';
-
-                // Create a new chart based on the selected chartId
-                var data;
-                switch (chartId) {
-                    case 'chart1':
-                        chartContainer.innerHTML = "";
-                        break;
-                    case 'chart2':
-                        data = {
-                            x: [1, 2, 3, 4, 5],
-                            y: [1, 3, 5, 7, 9],
-                            type: 'scatter'
-                        };
-                        break;
-                    case 'chart3':
-                        data = {
-                            x: [1, 2, 3, 4, 5],
-                            y: [5, 4, 3, 2, 1],
-                            type: 'scatter'
-                        };
-                        break;
-                    default:
-                        return;
-                }
-
-                // Plot the chart using Plotly
-                Plotly.newPlot('graph', [data]);
-            }
-    </script> -->
-</body>
-
-</html>
-
-<!--     
-    <form action="/buy_stocks" method="post">
-        <input type="hidden" name="stock_price" value="{{info['lastClose']}} ">
-        <input type="hidden" name="stock_name" value="{{name}} ">
-        <input type="hidden" name="stock_id" value="{{id}} ">
-        <input type="hidden" name="symbol" value="{{symbol}}">
-        <button type="submit">Buy</button>
-    </form>
-
-    <form action="/sell" method="get">
-        <input type="hidden" name="stock_price" value="{{info['lastClose']}} ">
-        <input type="hidden" name="stock_name" value="{{name}} ">
-        <input type="hidden" name="stock_id" value="{{id}} ">
-        <input type="hidden" name="symbol" value="{{symbol}}">
-        <button type="submit">Sell</button>
-    </form> -->
-
-
+<script>
+    function updateChart(){
+        // Retrieve the selected time period from the dropdown menu
+        var time = document.getElementById("time_period_dropdown").value;
+        console.log(time); // Check if the selected value is correct
+        
+        // Check if the selected time period matches a specific condition
+        if (time === "3m"){
+            // If the selected time period is 3 months, update the chart container with new data
+            document.getElementById("chart-container-2").innerHTML = "{{plot2}}";
+        }
+        // Add more conditions as needed for other time periods
+    }
+</script>
 
 
 
