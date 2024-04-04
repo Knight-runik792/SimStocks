@@ -8,6 +8,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import time
 from datetime import datetime as dt
 
+
 from helpers import *
 
 # Configure application
@@ -157,6 +158,7 @@ def history():
     return render_template("history.html", stocks=stocks)
 
 
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
@@ -224,6 +226,9 @@ def quote():
         return render_template("quote.html")
 
 
+
+
+
 @app.route('/stock_details/<stock_id>')
 def stock_details(stock_id):
     url = "https://ms-finance.p.rapidapi.com/stock/v2/get-realtime-data"
@@ -240,8 +245,39 @@ def stock_details(stock_id):
 
     response = requests.get(url, headers=headers, params=querystring)
     info = response.json()
-    print(info)
-    return render_template("info.html", info=info, symbol=symbol, name=name, id=stock_id)
+    print("info:",info)
+    owned = db2.execute("SELECT e2.quantity FROM stocks AS e1 JOIN portfolio AS e2 ON e1.id = e2.stock_id WHERE e1.symbol = ?", (info['ticker'],))  # Fetch one record from the result
+    print(owned)
+    if owned:  # Check if a record exists
+        quantity = owned[0]['quantity']  # Access the quantity value from the first (and only) column of the fetched record
+        current_portfolio = quantity * info['lastPrice']  # Calculate the current portfolio value
+    else:
+        quantity = 0  # Set default value for quantity if no record found
+        current_portfolio = 0  # Set default value for current portfolio
+
+    ticker=info["ticker"]
+    start_date = '2023-01-01'
+    end_date = '2024-01-01'
+
+    '''fetching candle data from yfinance'''
+    data = fetch_stock_data(ticker, start_date, end_date)
+    
+    '''generating a candlestick chart'''
+    plotly_candlestick_html = create_plotly_candlestick(data, ticker)
+
+    plot_list=generate_plot(stock_id)
+
+    plot1=plot_list[0]
+    plot2=plot_list[1]
+    plot3=plot_list[2]
+    plot4=plot_list[3]
+
+    plotly_returns_chart=generateReturnsPlot(stock_id)
+
+    return render_template("info.html", info=info, symbol=symbol, name=name, id=stock_id, owned=quantity, amount=current_portfolio, plotly_candlestick_html=plotly_candlestick_html,plot1=plot1,plot2=plot2,plot3=plot3,plot4=plot4, plotly_returns_chart=plotly_returns_chart)
+
+
+
 
 @app.route('/buy_stocks', methods=["POST"])
 def buy_stocks():
@@ -276,7 +312,7 @@ def register():
         hash = generate_password_hash(password)
 
         #confirming unique username
-        #stocks = #db.execute("SELECT * from users where username = ?", username)
+        stocks = db2.execute("SELECT * from users where username = ?", username)
         if len(stocks) > 0:
             return apology("Username Already Taken", 400)
 
@@ -357,6 +393,7 @@ def sell():
             name = request.args.get("stock_name")
 
             price=request.args.get("stock_price")
+            
             return render_template("sell_stock.html", symbol=symbol, name=name, price=price)
     return redirect("/")
 
