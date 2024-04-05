@@ -1,12 +1,8 @@
-import os
 import requests
-import urllib.parse
-import csv
-import datetime
 import yfinance as yf
 import plotly.graph_objects as go
+import os
 
-import uuid
 
 from flask import redirect, render_template, request, session
 from functools import wraps
@@ -46,7 +42,7 @@ def lookup(query):
     url = "https://ms-finance.p.rapidapi.com/market/v2/auto-complete"
 
     querystring = {"q": query}
-
+    
     headers = {
         "X-RapidAPI-Key": "9bd629774amshb655f0d1815c873p14e319jsne5adc0d52fd9",
         "X-RapidAPI-Host": "ms-finance.p.rapidapi.com"
@@ -194,12 +190,7 @@ def getHistory(perf_id):
     response = requests.get(url, headers=headers, params=querystring)
     json_data = response.json()
     return json_data
-   
-    # datetime_1Y = [item["DateTime"] for item in json_data[0]["5Y"]]
-    # prices = [entry['Price'] for entry in json_data[0]["5Y"]]
-    # print("Dates", datetime_1Y)
-    # print("Price", prices)
-    # return datetime_1Y, prices
+      
 
 
 def generate_plot(perf_id):

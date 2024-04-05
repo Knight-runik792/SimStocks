@@ -7,8 +7,6 @@ from werkzeug.exceptions import default_exceptions, HTTPException, InternalServe
 from werkzeug.security import check_password_hash, generate_password_hash
 import time
 from datetime import datetime as dt
-
-
 from helpers import *
 
 # Configure application
@@ -141,8 +139,6 @@ def buy():
                 #db.execute("INSERT INTO portfolio (user_id, username, stock_name, symbol, quantity) VALUES (?,?,?,?,?)", user_id, username, name, symbol, number)
                 db2.execute("INSERT INTO portfolio (user_id, stock_id, quantity) values (?, ?, ?) ", user_id, s['id'], number)
 
-    #if requested by GET, render purchase form
-   
 
     return redirect("/")
     
@@ -305,6 +301,10 @@ def register():
         print(request.form.get("username"))
         print(request.form.get("password"))
         print(request.form.get("confirmation"))
+
+        password = request.form.get("password")
+        username = request.form.get("username")
+        confirm = request.form.get("confirmation")
         if not request.form.get("username"):
             return apology("NO username provided!", 403)
 
@@ -313,9 +313,9 @@ def register():
     
         elif not request.form.get("password") ==  request.form.get("confirmation"):
             return apology("Passwords don't match")
+        elif len(password) < 8:
+            return apology("Password must contain atleast 8 characters") 
 
-        password = request.form.get("password")
-        username = request.form.get("username")
         hash = generate_password_hash(password)
 
         #confirming unique username
