@@ -3,11 +3,17 @@ import sqlite3
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp
+import pandas
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 import time
+from dateutil.relativedelta import relativedelta
 from datetime import datetime as dt
+import os
+import csv
 from helpers import *
+import talib
+from patterns import candlestick_patterns
 
 # Configure application
 app = Flask(__name__)
@@ -241,11 +247,11 @@ def stock_details(stock_id):
         "X-RapidAPI-Key": "9bd629774amshb655f0d1815c873p14e319jsne5adc0d52fd9",
         "X-RapidAPI-Host": "ms-finance.p.rapidapi.com"
     }
-
+    user_id = session["user_id"]
     response = requests.get(url, headers=headers, params=querystring)
     info = response.json()
     print("info:",info)
-    owned = db2.execute("SELECT e2.quantity FROM stocks AS e1 JOIN portfolio AS e2 ON e1.id = e2.stock_id WHERE e1.symbol = ?", (info['ticker'],))  # Fetch one record from the result
+    owned = db2.execute("SELECT e2.quantity FROM stocks AS e1 JOIN portfolio AS e2 ON e1.id = e2.stock_id WHERE e1.symbol = ? and e2.user_id=?", info['ticker'],user_id)  # Fetch one record from the result
     print(owned)
     if owned:  # Check if a record exists
         quantity = owned[0]['quantity']  # Access the quantity value from the first (and only) column of the fetched record
@@ -448,6 +454,64 @@ def article_details(article_id):
     
 
     return render_template("article.html", title=title,content=main_text)
+
+@app.route('/snapshot')
+def snapshot():
+    current_date = dt.datetime.now()
+
+    six_months_ago = current_date - relativedelta(months=1)
+
+    # Format the date as yyyy-mm-dd
+    formatted_date_now = current_date.strftime('%Y-%m-%d')
+    formatted_six_months_ago = six_months_ago.strftime('%Y-%m-%d')
+    with open('datasets/symbols.csv') as f:
+        for line in f:
+            if "," not in line:
+                continue
+            else:
+                symbol = line.split(",")[0]
+                data = yf.download(
+                    symbol, start=formatted_six_months_ago, end=formatted_date_now)
+                
+                print(data)
+                data.to_csv('datasets/daily/{}.csv'.format(symbol))
+
+    return {
+        "code": "success"
+    }
+
+
+@app.route('/analysis')
+def analysis():
+    pattern = request.args.get('pattern', False)
+    stocks = {}
+
+    with open('datasets/symbols.csv') as f:
+        for row in csv.reader(f):
+            stocks[row[0]] = {'company': row[1]}
+
+    if pattern:
+        for filename in os.listdir('datasets/daily'):
+            df = pandas.read_csv('datasets/daily/{}'.format(filename))
+            pattern_function = getattr(talib, pattern)
+            symbol = filename.split('.')[0]
+
+            try:
+                results = pattern_function(
+                    df['Open'], df['High'], df['Low'], df['Close'])
+                last = results.tail(1).values[0]
+
+                if last > 0:
+                    stocks[symbol][pattern] = 'bullish'
+                elif last < 0:
+                    stocks[symbol][pattern] = 'bearish'
+                else:
+                    stocks[symbol][pattern] = None
+            except Exception as e:
+                print('failed on filename: ', filename)
+
+    return render_template('analysis.html', candlestick_patterns=candlestick_patterns, stocks=stocks, pattern=pattern)
+
 
 def errorhandler(e):
     """Handle error"""
