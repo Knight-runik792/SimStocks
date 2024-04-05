@@ -1,6 +1,21 @@
-{% extends "layout.html" %}
+{% extends "layout3.html" %}
 {% block style %}
 <link href="static/login.css" rel="stylesheet"> </link>
+<style>
+    
+    .half-screen-image {
+        width: 50vw; /* Set the width to 50% of the viewport width */
+        height: 30vh; /* Maintain the aspect ratio */
+        display: block; /* Ensure it behaves as a block-level element */
+        margin: 0 auto; /* Center the image horizontally */
+        background-image: url("static/background.jpg");
+        background-size: cover; /* Cover the entire div with the background image */
+        background-position: center; 
+        padding-top: 5%;
+        
+    }
+</style> 
+
 {% endblock %}
 
 {% block title %}
@@ -8,5 +23,10 @@
 {% endblock %}
 
 {% block main %}
-    <img alt="{{ top }}" class="border" src="http://memegen.link/custom/{{ top | urlencode }}/{{ bottom | urlencode }}.jpg?alt=https://i.imgur.com/CsCgN7Ll.png" title="{{ top }}">
+<div class="half-screen-image">
+
+    
+        <h1 style="color: white;">Error Code:  {{top}} </h1>
+        <h2  style="color: white;"> {{bottom}}</h2>
+</div>
 {% endblock %}

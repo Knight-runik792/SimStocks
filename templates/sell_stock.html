@@ -10,16 +10,21 @@
 
 {% block main %}
     <form action="/sell" method="post">
-        <h2> {{symbol}}</h2>
-        <h2> {{name}}</h2>
-        <h2> {{price}}</h2>
+        <h4> Ticker: {{symbol}}</h4>
+        <h4> Name: {{name}}</h4>
+        <h4> Price: {{price}}</h4>
 
           <br>
           <br>
           <input type="hidden" name="symbol" value="{{symbol}}">
-          <input type="text" name="shares" placeholder="Shares" autocomplete="off" autofocus>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">you own: {{owned}}</span>
+            </div>
+            <input type="text" class="form-control" name="shares" placeholder="Shares" aria-label="Shares" aria-describedby="basic-addon1">
+          </div>
           <br>
-          <h4> you own: {{owned}}</h4>
+          
         <button class="btn btn-primary" type="submit">Sell Stock</button>
     </form>
 {% endblock %}

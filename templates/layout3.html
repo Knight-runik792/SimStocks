@@ -93,7 +93,7 @@
             background-color: transparent !important;
             /* Set background color to transparent */
             box-shadow: none;
-            position: sticky;
+            
             /* Remove any box shadow */
         }
 
@@ -101,6 +101,15 @@
         .navbar .nav-link {
             color: rgb(116, 184, 7);
             font-size: 2em;
+            
+        }
+
+        .navbar{
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100000000;
+            
         }
     </style>
 
@@ -110,27 +119,21 @@
 </head>
 
 <body>
-    <div class="navbar navbar-dark bg-dark">
-        <span class="navbar-brand mb-0 h1">SimStock</span>
+    <div class="navbar navbar-dark bg-dark" >
+        <span class="navbar-brand mb-0 h1" >SimStock</span>
         <div>
-            <a href="/quote" class="text-white mr-3">Quote</a>
-            <a href="sell" class="text-white mr-3">Sell</a>
-            <a href="/" class="text-white mr-3">Portfolio</a>
-            <a href="/history" class="text-white mr-3">History</a>
-            <a href="/logout" class="text-white mr-3"> Logout</a>
-            <a href="/recharge" class="text-white mr3">Recharge</a>
+            <a href="/quote" class=" mr-3">Quote</a>
+            <a href="sell" class=" mr-3">Sell</a>
+            <a href="/" class=" mr-3">Portfolio</a>
+            <a href="/history" class=" mr-3">History</a>
+            <a href="/logout" class=" mr-3"> Logout</a>
+            <a href="/recharge" class=" mr3">Recharge</a>
         </div>
     </div>
 
-    <div class="starfield">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-    </div>
+    
 
-
-    <main class="container p-5">
+    <main class="container p-5 " style="margin-top: 5%;">
         {% block main %}{% endblock %}
     </main>
 

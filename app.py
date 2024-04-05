@@ -63,7 +63,7 @@ def index():
 
 
     # querying cash remainig
-    user = db2.execute("SELECT cash FROM users WHERE id = ?", user_id)
+    user = db2.execute("SELECT cash, invested FROM users WHERE id = ?", user_id)
 
     for stock in stocks:
         # storing price of each stock price
@@ -71,11 +71,14 @@ def index():
         symbol = stock["symbol"]
        
         total += (price * int(stock["quantity"]))
+
         # stroring prices in a dictionary
         prices[symbol] = price
+    profit = total + user[0]['cash'] - user[0]['invested']
+    change =  "Loss" if (profit<0) else "Profit"
     print(prices)
     print(stocks)
-    return render_template("index.html", user=user, stocks=stocks, prices=prices, total=total)
+    return render_template("index.html",change=change, profit=profit, user=user, stocks=stocks, prices=prices, total=total)
 
 
 
@@ -271,6 +274,7 @@ def stock_details(stock_id):
     plot2=plot_list[1]
     plot3=plot_list[2]
     plot4=plot_list[3]
+    
 
     plotly_returns_chart=generateReturnsPlot(stock_id)
 
@@ -355,6 +359,7 @@ def sell():
         
         # shares owned
         stocks = db2.execute("SELECT portfolio.id, portfolio.user_id, users.username, portfolio.stock_id, stocks.symbol, stocks.name, portfolio.quantity FROM portfolio JOIN users ON portfolio.user_id = users.id JOIN stocks ON portfolio.stock_id = stocks.id WHERE users.id = ? and stocks.symbol=?", user_id, symbol)
+        print(stocks)
         shares = int(stocks[0]["quantity"])
         shares_to_sell = int(request.form.get("shares"))
    
@@ -407,14 +412,17 @@ def recharge():
     user_id = session["user_id"]
     user = db2.execute("SELECT * FROM users WHERE id = ?", user_id)
     cash = float(user[0]["cash"])
+    invested = float(user[0]["invested"])
     if request.method == "POST":
         amount = int(request.form.get("amount"))
         cash += amount
+        invested+= amount
         quantity = 1
         dash = "-"
 
         #updating database
-        db2.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
+        db2.execute("UPDATE users SET cash = ?, invested =? WHERE id = ?", cash, invested, user_id)
+        
         db2.execute("INSERT INTO history (timestamp, user_id, stock_id, price, quantity, action) VALUES (?, ?, ?, ?, ?, ?)", time.time(), user_id,3, amount, quantity, "Recharge")
 
     else:
