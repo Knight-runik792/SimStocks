@@ -3,6 +3,7 @@ CREATE TABLE users (
 	username TEXT NOT NULL,
 	hash TEXT NOT NULL,
 	cash NUMERIC NOT NULL DEFAULT 10000.00,
+	invested INT DEFAULT 10000,
 	PRIMARY KEY(id)
 	);
 

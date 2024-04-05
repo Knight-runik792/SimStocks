@@ -10,16 +10,23 @@
 
 {% block main %}
     <form action="/sell" method="post">
-        <select style="color:black;" name="symbol" class="form-select" aria-label="Default select example">
+        <select style="color:black;" name="symbol" class="form-select custom-select custom-select-lg mb-3" aria-label="Default select example">
             <option selected disabled>Select Stock
             </option>
             {% for stock in stocks %}
             <option style="color:black;" value="{{stock['symbol']}}">{{ stock["symbol"] }}</option>
             {% endfor %}
           </select>
+
+          
           <br>
           <br>
-          <input type="text" name="shares" placeholder="Shares" autocomplete="off" autofocus>
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" name="shares" placeholder="Shares" aria-label="Shares" aria-describedby="basic-addon2">
+            <div class="input-group-append">
+              <span class="input-group-text" id="basic-addon2">Shares</span>
+            </div>
+          </div>
           <br>
       
         <button class="btn btn-primary" type="submit">Sell Stock</button>

@@ -1,145 +1,162 @@
-{% extends "layout.html" %}
+{% extends "layout3.html" %}
 {% block title%}
 {{symbol}}
 {%endblock%}
 
-
 {% block style %}
-<link rel="stylesheet" href="infostyles.css">
+<style>
 
-{% endblock %}
+    .box{
+        z-index: 1;
+        color:rgb(20, 20, 19);
+        background-color: rgb(242, 233, 251);
+        border: 2px solid black;
+        border-radius: 15px;
+
+</style>
+
+}
+{%endblock%}
+
+
 
 
 {% block main %}
 
-    <div class="container">
-        <div class="particles"></div>
+<div class="container" >
 
+    <div class="card mb-4 box " >
+        <div class="card-body">
+            <h5 class="card-title">Stock Information</h5>
+            <p class="card-text"><strong>Company:</strong> {{name}}</p>
+            <p class="card-text"><strong>Symbol:</strong> {{info['ticker']}}</p>
+            <p class="card-text"><strong>Current Price: </strong> {{info['lastPrice'] | float | round(2)}}
+            </p>
+            <p class="card-text"><strong>Change: </strong> {{ info.dayChange | float |
+                round(2) }}
+                ({{ info.dayChangePer | float | round(2) }}%)</p>
 
-        <div class="card mb-4">
+            <p class="card-text"><strong>Market Cap:</strong> {{info['marketCap'] | usd}}</p>
+            <p class="card-text"><strong>Volume:</strong> {{info['volume']}} shares</p>
+            <p class="card-text"><strong>Avg Volume:</strong> {{info['avgVolume']}} shares</p>
+            <p class="card-text"><strong>Daily high: </strong>{{info['dayRangeHigh']    | usd}} </p>
+            <p class="card-text"><strong>Daily low: </strong> {{info['dayRangeLow']  | usd}}</p>
+            <p class="card-text"><strong>52-week high: </strong>{{info['yearRangeHigh']  | usd}} </p>
+            <p class="card-text"><strong>52-week low: </strong> {{info['yearRangeLow']  | usd}}</p>
+            <p class="card-text"><strong>Current Quantity Owned:</strong>{{owned}} shares</p>
+            <p class="card-text"><strong>Your Portfolio: </strong>{{amount  | usd}}</p>
+            <div class="row justify-content-center">
+                <div class="col-md-auto">
+                    <form action="/buy_stocks" method="post">
+                        <input type="hidden" name="stock_price" value="{{info['lastClose']}}">
+                        <input type="hidden" name="stock_name" value="{{name}}">
+                        <input type="hidden" name="stock_id" value="{{id}}">
+                        <input type="hidden" name="symbol" value="{{symbol}}">
+
+                        <button type="submit" class="btn btn-success">Buy</button>
+                    </form>
+                </div>
+                <div class="col-md-auto">
+                    <form action="/sell" method="get">
+                        <input type="hidden" name="stock_price" value="{{info['lastClose']}}">
+                        <input type="hidden" name="stock_name" value="{{name}}">
+                        <input type="hidden" name="stock_id" value="{{id}}">
+                        <input type="hidden" name="symbol" value="{{symbol}}">
+                        <input type="hidden" name="owned" value="{{owned}}">
+                        <button type="submit" class="btn btn-danger">Sell</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Card 1 -->
+<div class="row">
+    <div class="col">
+        <div class="card mb-4 box box">
             <div class="card-body">
-                <h5 class="card-title">Stock Information</h5>
-                <p class="card-text"><strong>Company:</strong> {{name}}</p>
-                <p class="card-text"><strong>Symbol:</strong> {{info['ticker']}}</p>
-                <p class="card-text"><strong>Current Price: </strong> ${{info['lastPrice'] | float | round(2)}}
-                </p>
-                <p class="card-text"><strong>Change: </strong> ${{ info.dayChange | float |
-                    round(2) }}
-                    ({{ info.dayChangePer | float | round(2) }}%)</p>
-                    
-                    <p class="card-text"><strong>Market Cap:</strong> ${{info['marketCap']}}</p>
-                    <p class="card-text"><strong>Volume:</strong> {{info['volume']}} shares</p>
-                    <p class="card-text"><strong>Avg Volume:</strong> {{info['avgVolume']}} shares</p>
-                    <p class="card-text"><strong>Daily high: </strong>${{info['dayRangeHigh']}} </p>
-                    <p class="card-text"><strong>Daily low: </strong> ${{info['dayRangeLow']}}</p>
-                    <p class="card-text"><strong>52-week high: </strong>${{info['yearRangeHigh']}} </p>
-                    <p class="card-text"><strong>52-week low: </strong> ${{info['yearRangeLow']}}</p>
-                    <p class="card-text"><strong>Current Quantity Owned:</strong>{{owned}} shares</p>
-                    <p class="card-text"><strong>Your Portfolio: </strong>${{amount}}</p>
-                    <div class="row justify-content-center">
-                        <div class="col-md-auto">
-                            <form action="/buy_stocks" method="post">
-                                <input type="hidden" name="stock_price" value="{{info['lastClose']}}">
-                            <input type="hidden" name="stock_name" value="{{name}}">
-                            <input type="hidden" name="stock_id" value="{{id}}">
-                            <input type="hidden" name="symbol" value="{{symbol}}">
+                <h5 class="card-title">CandleStick chart</h5>
+                <div class="graph-container" id="chart-container-1">{{ plotly_candlestick_html | safe }}</div>
+            </div>
+        </div>
+    </div>
+</div>
 
-                            <button type="submit" class="btn btn-success">Buy</button>
-                        </form>
+<!-- Chart Card 2 -->
+<div class="row">
+    <div class="col">
+        <div class="card mb-4 box">
+            <div class="card-body">
+                <h5 class="card-title">Stock Price Over Time</h5>
+                <div class="graph-container" id="chart-container-2">
+                    <div id="plot_3m">
+                        {{plot1 | safe}}
                     </div>
-                    <div class="col-md-auto">
-                        <form action="/sell" method="get">
-                            <input type="hidden" name="stock_price" value="{{info['lastClose']}}">
-                            <input type="hidden" name="stock_name" value="{{name}}">
-                            <input type="hidden" name="stock_id" value="{{id}}">
-                            <input type="hidden" name="symbol" value="{{symbol}}">
-                            <input type="hidden" name="owned" value="{{owned}}">
-                            <button type="submit" class="btn btn-danger">Sell</button>
-                        </form>
+
+                    <div id="plot_1y">
+                        {{plot2 | safe}}
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Chart Card 1 -->
-    <div class="row">
-        <div class="col">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">CandleStick chart</h5>
-                    <div class="graph-container" id="chart-container-1">{{ plotly_candlestick_html | safe }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Chart Card 2 -->
-    <div class="row">
-        <div class="col">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Stock Price Over Time</h5>
-                    <div class="graph-container" id="chart-container-2">  {{plot1 | safe}}</div>
-                    <div>
-                        <form>
-                            <select id="time_period_dropdown">
-                                <option value="3m">3 Months</option>
-                                <option value="1y">1 Year</option>
-                                <option value="5y">5 Years</option>
-                                <option value="max">Maximum</option>
-                            </select>
-                            <button type="button" onclick="updateChart()">Show</button>
-                        </form>
+
+                    <div id="plot_5y">
+                        <!-- Plot for 5 years -->
+                        {{plot3 | safe }}
+                    </div>
+
+                    <div id="plot_max">
+                        <!-- Plot for maximum available data -->
+                        {{plot4 | safe}}
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Chart Card 3 -->
-    <div class="row">
-        <div class="col">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Total Trailing Returns</h5>
-                    <div class="graph-container" id="chart-container-3">{{ plotly_returns_chart | safe }}</div>
-                </div>
+</div>
+
+<!-- Chart Card 3 -->
+<div class="row">
+    <div class="col">
+        <div class="card mb-4 box">
+            <div class="card-body">
+                <h5 class="card-title">Total Trailing Returns</h5>
+                <div class="graph-container" id="chart-container-3">{{ plotly_returns_chart | safe }}</div>
             </div>
         </div>
     </div>
-    <!-- Latest News Card -->
+</div>
+
+<!-- Latest News Card -->
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h2>Today's Hot News</h2>
+        </div>
+    </div>
+
+    {% for article in articles %}
     <div class="row">
         <div class="col">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Latest News</h5>
-                    <!-- Add news content here -->
-                    {% for article in articles %}
-                    <a href = "{{ url_for('article_details', article_id=article['Id']) }}"><p class="card-text"> {{article['Title']}} </p></a>
-                    {%endfor%}
+                    <h5 class="card-title">{{ article['Title'] }}</h5>
+
+                    <a href="{{ url_for('article_details', article_id=article['Id']) }}" class="btn btn-primary">Read More</a>
                 </div>
             </div>
         </div>
     </div>
+    {% endfor %}
+</div>
+
+
+
+
+
 </div>
 </div>
 </div>
 
-<script>
-    function updateChart(){
-        // Retrieve the selected time period from the dropdown menu
-        var time = document.getElementById("time_period_dropdown").value;
-        console.log(time); // Check if the selected value is correct
-        
-        // Check if the selected time period matches a specific condition
-        if (time === "3m"){
-            // If the selected time period is 3 months, update the chart container with new data
-            document.getElementById("chart-container-2").innerHTML = "{{plot2}}";
-        }
-        // Add more conditions as needed for other time periods
-    }
-</script>
+
 
 
 

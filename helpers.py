@@ -155,6 +155,7 @@ def lookup(symbol):
 
 def usd(value):
     """Format value as USD."""
+    value = float(value)
     return f"${value:,.2f}"
 
 
@@ -215,20 +216,28 @@ def generate_plot(perf_id):
     datesMax=[item["DateTime"] for item in data[0]["MAX"]]
     pricesMax=[item["Price"] for item in data[0]["MAX"]]
 
-    layout = go.Layout(title='Stock Price History', xaxis=dict(
+    layout1 = go.Layout(title='Over 3 Months', xaxis=dict(
         title='Date'), yaxis=dict(title='Price'))
+    
+    layout2 = go.Layout(title='Over 1 Year', xaxis=dict(
+        title='Date'), yaxis=dict(title='Price'))
+    layout3 = go.Layout(title='Over 5 Years', xaxis=dict(
+        title='Date'), yaxis=dict(title='Price'))
+    layout4 = go.Layout(title='All changes up till now', xaxis=dict(
+        title='Date'), yaxis=dict(title='Price'))
+
     # Create a Plotly scatter plot
     trace1 = go.Scatter(x=dates3M, y=prices3M, mode='lines', name='Stock Price')
-    fig1 = go.Figure(data=[trace1], layout=layout)
+    fig1 = go.Figure(data=[trace1], layout=layout1)
 
     trace2=go.Scatter(x=dates1Y, y=prices1Y, mode='lines', name='Stock Price')
-    fig2=go.Figure(data=[trace2], layout=layout)
+    fig2=go.Figure(data=[trace2], layout=layout2)
 
     trace3=go.Scatter(x=dates5Y, y=prices5Y, mode='lines', name='Stock Price')
-    fig3=go.Figure(data=[trace3], layout=layout)
+    fig3=go.Figure(data=[trace3], layout=layout3)
 
     trace4=go.Scatter(x=datesMax, y=pricesMax, mode='lines', name='Stock Price')
-    fig4=go.Figure(data=[trace4], layout=layout)
+    fig4=go.Figure(data=[trace4], layout=layout4)
     # Convert the Plotly figure to html
     plot1 = fig1.to_html(full_html="False")
     plot2 = fig2.to_html(full_html="False")
@@ -236,9 +245,7 @@ def generate_plot(perf_id):
     plot4 = fig4.to_html(full_html="False")
 
     plots=[plot1,plot2,plot3,plot4]
-
     
-
     return plots
 
 def getTrailingReturns(perf_id):

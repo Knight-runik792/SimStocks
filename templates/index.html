@@ -1,7 +1,8 @@
-{% extends "layout.html" %}
+{% extends "layout3.html" %}
 
 {% block style %}
 <link href="static/login.css" rel="stylesheet"> </link>
+
 {% endblock %}
 
 {% block title %}
@@ -9,7 +10,9 @@
 {% endblock %}
 
 {% block main %}
-<table class = "table blur">
+
+
+     <table class = "table blur" style="top:50%;right:50%">
     <thead class="thead-dark">
         <tr>
             <th scope="col"> Symbol</th> 
@@ -17,7 +20,6 @@
             <th scope="col"> Shares</td>
             <th scope="col"> Price</th>
             <th scope="col"> TOTAL</th>
-          
         </tr>
     </thead>
 
@@ -28,23 +30,36 @@
             <td> {{ stock["symbol"] }}</td>
             <td> {{ stock["name"] }}</td>
             <td> {{ stock["quantity"] }}</td>
-            <td> {{ prices[stock["symbol"]]  }} </td>
+            <td> {{ prices[stock["symbol"]] }} </td>
             <td> {{prices[stock["symbol"]] * stock["quantity"] }} </td>            
         </tr>
         {% endfor %}
-    <tr class="font-weight-bold">
+    <tr class="font-weight-bold" style="color: rgb(69, 69, 193)">
         <td align="right" colspan="4">Portfolio Value</td>
         <td > {{ total | usd }}</td>
     </tr>
 
-    <tr class="font-weight-bold">
+    <tr class="font-weight-bold" style="color: blue">
         <td align="right" colspan="4"> Cash</td>
         <td> {{ user[0]["cash"] | usd }}</td>
     </tr>
-    <tr  class="font-weight-bold">
+    <tr class="font-weight-bold" style="color: blue">
         <td align="right" colspan="4"> Total </td>
         <td> {{ (user[0]["cash"] + total) | usd }}</td>
     </tr>
+
+    <tr class="font-weight-bold" style="color: blue">
+        <td align="right" colspan="4"> Invested</td>
+        <td> {{user[0]["invested"]  | usd}} </td>
+    </tr>
+
+    <tr class="font-weight-bold" style="color: blue">
+        <td align="right" colspan="4"> {{change}}</td>
+        <td> {{profit | usd}} </td>
+    </tr>
+
+    </tr>
     </tbody>
-   
+</table>
+  
 {% endblock %}
