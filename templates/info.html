@@ -13,9 +13,9 @@
         border: 2px solid black;
         border-radius: 15px;
 
+        
+    }
 </style>
-
-}
 {%endblock%}
 
 
@@ -48,7 +48,7 @@
             <div class="row justify-content-center">
                 <div class="col-md-auto">
                     <form action="/buy_stocks" method="post">
-                        <input type="hidden" name="stock_price" value="{{info['lastClose']}}">
+                        <input type="hidden" name="stock_price" value="{{info['lastPrice']}}">
                         <input type="hidden" name="stock_name" value="{{name}}">
                         <input type="hidden" name="stock_id" value="{{id}}">
                         <input type="hidden" name="symbol" value="{{symbol}}">
@@ -58,7 +58,7 @@
                 </div>
                 <div class="col-md-auto">
                     <form action="/sell" method="get">
-                        <input type="hidden" name="stock_price" value="{{info['lastClose']}}">
+                        <input type="hidden" name="stock_price" value="{{info['lastPrice']}}">
                         <input type="hidden" name="stock_name" value="{{name}}">
                         <input type="hidden" name="stock_id" value="{{id}}">
                         <input type="hidden" name="symbol" value="{{symbol}}">
